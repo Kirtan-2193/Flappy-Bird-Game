@@ -5,107 +5,95 @@ import java.util.Random;
 import javax.swing.*;
 
 public class FlappyBird extends JPanel implements ActionListener, KeyListener {
+
     int boardWidth = 360;
     int boardHeight = 640;
 
-    //Images
-     Image backgroundImg;
-     Image birdImg;
-     Image topPipeImg;
-     Image bottomPipeImg;
+    // Images
+    Image backgroundImg;
+    Image birdImg;
+    Image topPipeImg;
+    Image bottomPipeImg;
 
-     //Bird 
-     int birdx = boardWidth/8;
-     int birdy = boardHeight/2;
-     int birdWidth = 34;
-     int birdHeight = 24;
+    // Bird
+    int birdx = boardWidth / 8;
+    int birdy = boardHeight / 2;
+    int birdWidth = 34;
+    int birdHeight = 24;
 
-     class Bird 
-     {
+    class Bird {
         int x = birdx;
         int y = birdy;
         int width = birdWidth;
         int height = birdHeight;
         Image img;
 
-        Bird(Image img)
-        {
+        Bird(Image img) {
             this.img = img;
         }
-     }
+    }
 
-      //Pipes
-      int pipex = boardWidth;
-      int pipey = 0;
-      int pipeWidth = 64;  // Scaled by 1/6
-      int pipeHeight = 512;
+    // Pipes
+    int pipex = boardWidth;
+    int pipey = 0;
+    int pipeWidth = 64;
+    int pipeHeight = 512;
 
-      class Pipe
-      {
-          int x = pipex;
-          int y = pipey;
-          int width = pipeWidth;
-          int height = pipeHeight;
-          Image img;
-          boolean passed = false;
+    class Pipe {
+        int x = pipex;
+        int y = pipey;
+        int width = pipeWidth;
+        int height = pipeHeight;
+        Image img;
+        boolean passed = false;
 
-          Pipe(Image img){
-              this.img = img;
-          }
-      }
+        Pipe(Image img) {
+            this.img = img;
+        }
+    }
 
-     //game logic
-     Bird bird;
-     int velocityX = -4; //Move pipe to the laft speed (simulates bird moving right)
-     int velocityY = 0;
-     int gravity = 1;
+    // Game logic
+    Bird bird;
+    int velocityX = -4;
+    int velocityY = 0;
+    int gravity = 1;
 
-     ArrayList<Pipe> pipes;
-     Random random = new Random();
+    ArrayList<Pipe> pipes;
+    Random random = new Random();
 
-     Timer gameLoop;
-     Timer placePipesTimer;
-     boolean gameOver = false;
-     double score = 0;
+    Timer gameLoop;
+    Timer placePipesTimer;
+    boolean gameOver = false;
 
-    FlappyBird()
-    {
+    double score = 0;
+    double highScore = 0;   // ⭐ HIGH SCORE
+
+    FlappyBird() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
-        // setBackground(Color.blue);
         setFocusable(true);
         addKeyListener(this);
 
-        //load images
-         backgroundImg = new ImageIcon(getClass().getResource("./flappybirdbg.png")).getImage();
-         birdImg = new ImageIcon(getClass().getResource("./flappybird.png")).getImage();
-         topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
-         bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
+        // Load images
+        backgroundImg = new ImageIcon(getClass().getResource("./flappybirdbg.png")).getImage();
+        birdImg = new ImageIcon(getClass().getResource("./flappybird.png")).getImage();
+        topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
+        bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
 
-        bird =new Bird(birdImg);
-        pipes = new ArrayList<Pipe>();
+        bird = new Bird(birdImg);
+        pipes = new ArrayList<>();
 
-        //Place Pipes Timer
-        placePipesTimer = new Timer(1500 , new ActionListener() {
-           @Override
-           public void actionPerformed(ActionEvent e){
-                placePipe();
-           } 
-        });
+        // Pipe timer
+        placePipesTimer = new Timer(1500, e -> placePipe());
         placePipesTimer.start();
 
-        //game Timer
-        gameLoop = new Timer(1000/60, this);//1000/60 = 16.0
+        // Game loop
+        gameLoop = new Timer(1000 / 60, this);
         gameLoop.start();
-
     }
 
-     public void placePipe(){
-        //(0-1) * pipeHeight/2 -> (0-256)
-        //128
-        //0 - 128 - (0-256) --> pipeHeight/4 -> 3/4 pipeHeight
-
-        int randomPipeY = (int) (pipey - pipeHeight/4 - Math.random()*(pipeHeight/2));
-        int openingSpace = boardHeight/4;
+    public void placePipe() {
+        int randomPipeY = (int) (pipey - pipeHeight / 4 - Math.random() * (pipeHeight / 2));
+        int openingSpace = boardHeight / 4;
 
         Pipe topPipe = new Pipe(topPipeImg);
         topPipe.y = randomPipeY;
@@ -114,92 +102,94 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         Pipe bottomPipe = new Pipe(bottomPipeImg);
         bottomPipe.y = topPipe.y + pipeHeight + openingSpace;
         pipes.add(bottomPipe);
-     }    
+    }
 
-     public void paintComponent(Graphics g)
-     {
-         super.paintComponent(g);
-         draw(g);
-     }
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
 
-     public void draw(Graphics g)
-     {
-         //background
-         g.drawImage(backgroundImg, 0, 0, boardWidth, boardHeight, null);
+    public void draw(Graphics g) {
+        // Background
+        g.drawImage(backgroundImg, 0, 0, boardWidth, boardHeight, null);
 
-         //Bird 
-         g.drawImage(bird.img, bird.x, bird.y, bird.width, bird.height, null);
+        // Bird
+        g.drawImage(bird.img, bird.x, bird.y, bird.width, bird.height, null);
 
-         //Pipes
-         for (int i = 0; i < pipes.size(); i++){
-            Pipe pipe = pipes.get(i);
+        // Pipes
+        for (Pipe pipe : pipes) {
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
-         }
+        }
 
-         //Score
-         g.setColor(Color.white);
-         g.setFont(new Font("Arial", Font.PLAIN, 32));
-         if (gameOver){
-            g.drawString("Game Over : "+ String.valueOf((int) score),  10, 35);
-         }
-         else{
-            g.drawString(String.valueOf((int) score), 10, 35);
-         }
-     }
+        // Text
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 28));
 
-     public void move()
-     {
-        //bird
+        if (gameOver) {
+            g.drawString("Game Over", 90, 200);
+            g.drawString("Score : " + (int) score, 90, 240);
+            g.drawString("High Score : " + (int) highScore, 60, 280);
+            g.setFont(new Font("Arial", Font.PLAIN, 18));
+            g.drawString("Press SPACE to Restart", 65, 320);
+        } else {
+            g.drawString("Score : " + (int) score, 10, 35);
+            g.drawString("High : " + (int) highScore, 10, 70);
+        }
+    }
+
+    public void move() {
+        // Bird movement
         velocityY += gravity;
         bird.y += velocityY;
         bird.y = Math.max(bird.y, 0);
 
-        //Pipes
-        for (int i = 0; i < pipes.size(); i++){
-            Pipe pipe = pipes.get(i);
+        // Pipes movement
+        for (Pipe pipe : pipes) {
             pipe.x += velocityX;
 
-            if (!pipe.passed && bird.x > pipe.x + pipe.width){
+            if (!pipe.passed && bird.x > pipe.x + pipe.width) {
                 pipe.passed = true;
-                score += 0.5; //0.5 because there are 2 pipes! so 0.5*2 = 1, 1 for each set of pipes
+                score += 0.5;
             }
 
-            if (collision(bird, pipe)){
+            if (collision(bird, pipe)) {
                 gameOver = true;
             }
         }
 
-        if (bird.y > boardHeight){
+        if (bird.y > boardHeight) {
             gameOver = true;
-        }
-
-     }
-
-     public boolean collision(Bird a, Pipe b){
-        return a.x < b.x + b.width &&  // a's top left corner doesn't reach b's top right corner
-               a.x + a.width > b.x &&  // a's top right corner passes b's top left corner
-               a.y < b.y + b.height && // a's top left corner doesn't reach b's bottom left corner
-               a.y + a.height > b.y ;  // a's bottom corner passes b's top left corner
-     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {    
-        move();
-        repaint();
-        if (gameOver){
-            placePipesTimer.stop();
-            gameLoop.stop();       
         }
     }
 
+    public boolean collision(Bird a, Pipe b) {
+        return a.x < b.x + b.width &&
+               a.x + a.width > b.x &&
+               a.y < b.y + b.height &&
+               a.y + a.height > b.y;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        move();
+        repaint();
+
+        if (gameOver) {
+            if (score > highScore) {
+                highScore = score;
+            }
+            placePipesTimer.stop();
+            gameLoop.stop();
+        }
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE)
-        {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             velocityY = -9;
-            if (gameOver){
-                //restart the game by resetting the conditions
+
+            if (gameOver) {
                 bird.y = birdy;
                 velocityY = 0;
                 pipes.clear();
@@ -212,9 +202,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
-
-    @Override
     public void keyReleased(KeyEvent e) {}
-
+    @Override
+    public void keyTyped(KeyEvent e) {}
 }
